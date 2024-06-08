@@ -12,6 +12,7 @@ func main() {
 	app := fiber.New()
 
 	routes.Setup(app)
+	routes.Register(app)
 
 	err := app.Listen(":8000")
 
