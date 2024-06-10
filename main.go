@@ -20,6 +20,7 @@ func main() {
 	routes.Setup(app)
 	routes.Register(app)
 	routes.Login(app)
+	routes.User(app)
 
 	err := app.Listen(":8000")
 

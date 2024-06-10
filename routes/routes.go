@@ -16,3 +16,7 @@ func Register(app *fiber.App) {
 func Login(app *fiber.App) {
 	app.Post("/api/login", controllers.Login)
 }
+
+func User(app *fiber.App) {
+	app.Get("/api/user", controllers.User)
+}
