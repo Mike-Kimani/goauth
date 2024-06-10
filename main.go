@@ -21,6 +21,7 @@ func main() {
 	routes.Register(app)
 	routes.Login(app)
 	routes.User(app)
+	routes.Logout(app)
 
 	err := app.Listen(":8000")
 

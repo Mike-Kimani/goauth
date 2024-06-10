@@ -20,3 +20,7 @@ func Login(app *fiber.App) {
 func User(app *fiber.App) {
 	app.Get("/api/user", controllers.User)
 }
+
+func Logout(app *fiber.App) {
+	app.Post("/api/logout", controllers.Logout)
+}
