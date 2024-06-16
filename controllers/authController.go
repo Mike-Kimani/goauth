@@ -16,13 +16,38 @@ func Hello(c *fiber.Ctx) error {
 
 const SecretKey = "secret"
 
+var MinPasswordLength = 5
+
 func Register(c *fiber.Ctx) error {
 	var data map[string]string
 	err := c.BodyParser(&data)
 
+	if data["name"] == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "name is required",
+		})
+	}
+
 	if err != nil {
 		return err
 	}
+	if data["email"] == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "email is required",
+		})
+	}
+	if data["password"] == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "password is required",
+		})
+	}
+
+	if len(data["password"]) < MinPasswordLength {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Password is too short. Must be at least 5 characters",
+		})
+	}
+
 	password, _ := bcrypt.GenerateFromPassword([]byte(data["password"]), 14)
 
 	user := models.User{
@@ -31,6 +56,12 @@ func Register(c *fiber.Ctx) error {
 		Password: password,
 	}
 	database.DB.Create(&user)
+
+	if user.Id == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "user not created. check if already exists",
+		})
+	}
 
 	return c.JSON(user)
 }
@@ -53,9 +84,12 @@ func Login(c *fiber.Ctx) error {
 
 	err = bcrypt.CompareHashAndPassword(user.Password, []byte(data["password"]))
 	if err != nil {
-		return c.JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "incorrect password",
 		})
+		//return c.JSON(fiber.Map{
+		//	"message": "incorrect password",
+		//})
 	}
 
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
@@ -67,7 +101,7 @@ func Login(c *fiber.Ctx) error {
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError)
 		return c.JSON(fiber.Map{
-			"message": "error",
+			"message": "server error generating token",
 		})
 	}
 
